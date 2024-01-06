@@ -35,6 +35,8 @@ public class BlankPanelItemModel extends ForwardingBakedModel {
 
     @Override
     public void emitItemQuads(ItemStack stack, Supplier<Random> randomSupplier, RenderContext context) {
+        if (RenderGlobals.IN_FRAME) return;
+
         DrawerFrameBlockEntity drawerFrame = RenderGlobals.DRAWER_FRAME.get();
         if (drawerFrame == null || drawerFrame.templateState == null) {
             super.emitItemQuads(stack, randomSupplier, context);

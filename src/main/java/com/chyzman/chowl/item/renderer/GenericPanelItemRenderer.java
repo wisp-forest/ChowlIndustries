@@ -58,7 +58,7 @@ public class GenericPanelItemRenderer implements BuiltinItemRendererRegistry.Dyn
         matrices.multiply(RotationAxis.NEGATIVE_Y.rotationDegrees(180));
 
         var baseModel = client.getBakedModelManager().getModel(baseModelId);
-        if (baseModel != null) {
+        if (baseModel != null && !RenderGlobals.IN_FRAME) {
             client.getItemRenderer().renderItem(stack, ModelTransformationMode.FIXED, false, matrices, vertexConsumers, light, overlay, baseModel);
         }
 

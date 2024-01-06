@@ -19,6 +19,7 @@ import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.SkullItem;
 import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.RotationAxis;
 import net.minecraft.world.World;
@@ -85,16 +86,21 @@ public class DrawerFrameBlockEntityRenderer implements BlockEntityRenderer<Drawe
                     RenderGlobals.FRAME_SIDE.set(side);
                     RenderGlobals.FRAME_POS.set(entity.getPos());
                     RenderGlobals.FRAME_WORLD.set(world);
+                    RenderGlobals.IN_FRAME = true;
+
                     matrices.push();
+
                     if (stack.getItem() instanceof SkullItem) {
                         matrices.scale(2f, 2f, 1/3f);
                         matrices.translate(0, 0, 1/4f);
                     }
+
                     matrices.translate(0, 0, 1 / 32f);
-                    RenderGlobals.IN_FRAME = true;
+
                     client.getItemRenderer().renderItem(stack, ModelTransformationMode.FIXED, false, matrices, vertexConsumers, light, overlay, client.getItemRenderer().getModels().getModel(stack));
-                    RenderGlobals.IN_FRAME = false;
+
                     if (vertexConsumers instanceof VertexConsumerProvider.Immediate immediate) immediate.draw();
+
                     matrices.translate(0, 0, -1 / 32f);
                     matrices.pop();
                 } finally {
@@ -102,6 +108,7 @@ public class DrawerFrameBlockEntityRenderer implements BlockEntityRenderer<Drawe
                     RenderGlobals.FRAME_SIDE.remove();
                     RenderGlobals.FRAME_POS.remove();
                     RenderGlobals.FRAME_WORLD.remove();
+                    RenderGlobals.IN_FRAME = false;
                 }
                 matrices.pop();
 

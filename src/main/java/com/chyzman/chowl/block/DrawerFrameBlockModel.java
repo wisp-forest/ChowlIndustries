@@ -3,13 +3,16 @@
 
 package com.chyzman.chowl.block;
 
+import com.chyzman.chowl.client.MatrixQuadTransform;
 import com.chyzman.chowl.client.RenderGlobals;
 import com.chyzman.chowl.client.RetextureInfo;
+import com.chyzman.chowl.item.component.PanelItem;
 import net.fabricmc.fabric.api.renderer.v1.mesh.MutableQuadView;
 import net.fabricmc.fabric.api.renderer.v1.model.ForwardingBakedModel;
 import net.fabricmc.fabric.api.renderer.v1.render.RenderContext;
 import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachedBlockView;
 import net.minecraft.block.BlockState;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.render.model.Baker;
 import net.minecraft.client.render.model.ModelBakeSettings;
@@ -17,9 +20,11 @@ import net.minecraft.client.render.model.UnbakedModel;
 import net.minecraft.client.texture.Sprite;
 import net.minecraft.client.util.SpriteIdentifier;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.SkullItem;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.RotationAxis;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.BlockRenderView;
 import org.jetbrains.annotations.NotNull;
@@ -50,6 +55,80 @@ public class DrawerFrameBlockModel extends ForwardingBakedModel {
         }
         super.emitBlockQuads(blockView, state, pos, randomSupplier, context);
         if (template != null) context.popTransform();
+
+        var be = (DrawerFrameBlockEntity) blockView.getBlockEntity(pos);
+        var client = MinecraftClient.getInstance();
+
+        if (be != null) {
+            var transform = new MatrixQuadTransform();
+            var matrices = transform.matrices();
+
+            matrices.translate(-0.5F, -0.5F, -0.5F);
+
+            context.pushTransform(transform);
+
+            for (int i = 0; i < 6; i++) {
+                Direction side = Direction.byId(i);
+                var stack = be.stacks.get(i).getLeft();
+                var orientation = be.stacks.get(i).getRight();
+
+                if (stack.isEmpty()) continue;
+                if (!(stack.getItem() instanceof PanelItem panel)) continue;
+
+                BakedModel baseModel = client.getBakedModelManager().getModel(panel.baseModelId());
+
+                if (baseModel == null) continue;
+
+                matrices.push();
+                matrices.translate(0.5, 0.5, 0.5);
+                matrices.multiply(side.getRotationQuaternion());
+                matrices.translate(0, 0.5, 0);
+                matrices.multiply(RotationAxis.NEGATIVE_X.rotationDegrees(90));
+                matrices.multiply(RotationAxis.NEGATIVE_Y.rotationDegrees(180));
+                float rotation = 0;
+                if (orientation > 0 && orientation < 4) {
+                    rotation = orientation * 90;
+                } else if (orientation < 0 && orientation > -721) {
+                    rotation = client.world.getTime() % 360 * (-orientation + 360);
+                }
+                matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(rotation));
+
+                if (!(stack.getItem() instanceof PanelItem)) {
+                    matrices.translate(0, 0, -1 / 32f);
+                    matrices.scale(3 / 4f, 3 / 4f, 3 / 4f);
+                    matrices.translate(0, 0, 1 / 32f);
+                }
+
+                try {
+                    RenderGlobals.DRAWER_FRAME.set(be);
+                    RenderGlobals.FRAME_SIDE.set(side);
+                    RenderGlobals.FRAME_POS.set(be.getPos());
+                    RenderGlobals.FRAME_WORLD.set(be.getWorld());
+
+                    matrices.push();
+
+                    if (stack.getItem() instanceof SkullItem) {
+                        matrices.scale(2f, 2f, 1 / 3f);
+                        matrices.translate(0, 0, 1 / 4f);
+                    }
+
+                    matrices.translate(0, 0, 1 / 32f);
+
+                    baseModel.emitItemQuads(stack, randomSupplier, context);
+
+                    matrices.translate(0, 0, -1 / 32f);
+                    matrices.pop();
+                } finally {
+                    RenderGlobals.DRAWER_FRAME.remove();
+                    RenderGlobals.FRAME_SIDE.remove();
+                    RenderGlobals.FRAME_POS.remove();
+                    RenderGlobals.FRAME_WORLD.remove();
+                }
+                matrices.pop();
+            }
+
+            context.popTransform();
+        }
     }
 
     @Override

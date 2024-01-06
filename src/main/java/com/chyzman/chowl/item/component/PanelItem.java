@@ -14,13 +14,16 @@ import net.fabricmc.fabric.api.transfer.v1.storage.StorageUtil;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.registry.Registries;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
@@ -120,6 +123,11 @@ public interface PanelItem {
 
     default boolean hasConfig() {
         return false;
+    }
+
+    default Identifier baseModelId() {
+        Identifier itemId = Registries.ITEM.getId((Item) this);
+        return new Identifier(itemId.getNamespace(), "item/" + itemId.getPath() + "_base");
     }
 
     default void openConfig(ItemStack stack, PlayerEntity user, @Nullable Consumer<ItemStack> updater) {
