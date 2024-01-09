@@ -1,3 +1,4 @@
 {
-    "display_completion": true
+    "display_completion": true,
+    "texture": "chowl-industries:textures/gui/chowl_book.png"
 }

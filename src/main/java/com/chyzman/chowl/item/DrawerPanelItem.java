@@ -3,16 +3,11 @@ package com.chyzman.chowl.item;
 import com.chyzman.chowl.block.DrawerFrameBlockEntity;
 import com.chyzman.chowl.block.button.BlockButton;
 import com.chyzman.chowl.item.component.*;
-import com.chyzman.chowl.transfer.BigStorageView;
-import com.chyzman.chowl.transfer.PanelStorage;
-import com.chyzman.chowl.transfer.PanelStorageContext;
-import com.chyzman.chowl.transfer.TransferState;
-import com.chyzman.chowl.util.BigIntUtils;
+import com.chyzman.chowl.transfer.*;
 import com.chyzman.chowl.util.NbtKeyTypes;
 import io.wispforest.owo.nbt.NbtKey;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.SlottedStorage;
-import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
@@ -113,22 +108,22 @@ public class DrawerPanelItem extends BasePanelItem implements PanelItem, Filteri
     }
 
     @SuppressWarnings("UnstableApiUsage")
-    private class Storage extends PanelStorage implements SingleSlotStorage<ItemVariant>, BigStorageView<ItemVariant> {
+    private class Storage extends PanelStorage implements BigSingleSlotStorage<ItemVariant> {
         public Storage(PanelStorageContext ctx) {
             super(ctx);
         }
 
         @Override
-        public long insert(ItemVariant resource, long maxAmount, TransactionContext transaction) {
+        public BigInteger bigInsert(ItemVariant resource, BigInteger maxAmount, TransactionContext transaction) {
             var contained = ctx.stack().get(VARIANT);
 
             if (contained.isBlank()) contained = resource;
-            if (!contained.equals(resource)) return 0;
+            if (!contained.equals(resource)) return BigInteger.ZERO;
 
             var currentCount = ctx.stack().get(COUNT);
             var capacity = DrawerPanelItem.this.capacity(ctx.stack());
             var spaceLeft = capacity.subtract(currentCount).max(BigInteger.ZERO);
-            var inserted = spaceLeft.min(BigInteger.valueOf(maxAmount));
+            var inserted = spaceLeft.min(maxAmount);
 
             updateSnapshots(transaction);
             ctx.stack().put(VARIANT, contained);
@@ -143,20 +138,20 @@ public class DrawerPanelItem extends BasePanelItem implements PanelItem, Filteri
             ))
                 return maxAmount;
 
-            return BigIntUtils.longValueSaturating(inserted);
+            return inserted;
         }
 
         @Override
-        public long extract(ItemVariant resource, long maxAmount, TransactionContext tx) {
+        public BigInteger bigExtract(ItemVariant resource, BigInteger maxAmount, TransactionContext tx) {
             var contained = ctx.stack().get(VARIANT);
 
-            if (contained.isBlank()) return 0;
-            if (!contained.equals(resource)) return 0;
+            if (contained.isBlank()) return BigInteger.ZERO;
+            if (!contained.equals(resource)) return BigInteger.ZERO;
 
             var currentCount = ctx.stack().get(COUNT);
 
-            long removed = Math.min(BigIntUtils.longValueSaturating(currentCount), maxAmount);
-            var newCount = currentCount.subtract(BigInteger.valueOf(removed));
+            BigInteger removed = currentCount.min(maxAmount);
+            var newCount = currentCount.subtract(removed);
 
             updateSnapshots(tx);
             ctx.stack().put(COUNT, newCount);

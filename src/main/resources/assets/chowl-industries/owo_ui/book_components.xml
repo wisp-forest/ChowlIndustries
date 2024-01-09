@@ -1,0 +1,112 @@
+<owo-ui xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/wisp-forest/owo-lib/1.20/owo-ui.xsd">
+    <templates>
+        <template name="combine-panels-example">
+            <!-- i will explode -->
+            <flow-layout direction="horizontal">
+                <children>
+                    <flow-layout direction="vertical">
+                        <children>
+                            <texture texture="chowl-industries:textures/gui/chowl_book.png" texture-width="512" texture-height="256"
+                                     u="54" v="186" region-width="104" region-height="54">
+                                <blend>true</blend>
+                            </texture>
+
+                            <grid-layout rows="3" columns="3" id="input-grid">
+                                <children>
+                                    <chowl.ingredient row="0" column="0">
+                                        <margins>
+                                            <top>1</top>
+                                            <left>1</left>
+                                        </margins>
+                                        <stack>chowl-industries:drawer_panel</stack>
+                                    </chowl.ingredient>
+                                    <chowl.ingredient row="0" column="1">
+                                        <margins>
+                                            <top>1</top>
+                                            <left>1</left>
+                                        </margins>
+                                        <stack>chowl-industries:drawer_panel</stack>
+                                    </chowl.ingredient>
+                                    <chowl.ingredient row="0" column="2">
+                                        <margins>
+                                            <top>1</top>
+                                            <left>1</left>
+                                        </margins>
+                                    </chowl.ingredient>
+                                    <chowl.ingredient row="1" column="0">
+                                        <margins>
+                                            <top>1</top>
+                                            <left>1</left>
+                                        </margins>
+                                    </chowl.ingredient>
+                                    <chowl.ingredient row="1" column="1">
+                                        <margins>
+                                            <top>1</top>
+                                            <left>1</left>
+                                        </margins>
+                                    </chowl.ingredient>
+                                    <chowl.ingredient row="1" column="2">
+                                        <margins>
+                                            <top>1</top>
+                                            <left>1</left>
+                                        </margins>
+                                    </chowl.ingredient>
+                                    <chowl.ingredient row="2" column="0">
+                                        <margins>
+                                            <top>1</top>
+                                            <left>1</left>
+                                        </margins>
+                                    </chowl.ingredient>
+                                    <chowl.ingredient row="2" column="1">
+                                        <margins>
+                                            <top>1</top>
+                                            <left>1</left>
+                                        </margins>
+                                    </chowl.ingredient>
+                                    <chowl.ingredient row="2" column="2">
+                                        <margins>
+                                            <top>1</top>
+                                            <left>1</left>
+                                        </margins>
+                                    </chowl.ingredient>
+                                </children>
+
+                                <padding>
+                                    <all>1</all>
+                                    <right>2</right>
+                                    <bottom>2</bottom>
+                                </padding>
+
+                                <positioning type="absolute">0,0</positioning>
+                            </grid-layout>
+
+                            <item id="output">
+                                <set-tooltip-from-stack>true</set-tooltip-from-stack>
+                                <positioning type="absolute">83,19</positioning>
+                                <stack>chowl-industries:drawer_panel{Capacity:"1"}</stack>
+                            </item>
+
+                            <item>
+                                <stack>minecraft:crafting_table</stack>
+                                <set-tooltip-from-stack>true</set-tooltip-from-stack>
+                                <positioning type="absolute">85,41</positioning>
+                                <sizing>
+                                    <horizontal method="fixed">12</horizontal>
+                                    <vertical method="fixed">12</vertical>
+                                </sizing>
+                            </item>
+                        </children>
+                    </flow-layout>
+                </children>
+
+                <horizontal-alignment>center</horizontal-alignment>
+                <vertical-alignment>center</vertical-alignment>
+
+                <sizing>
+                    <horizontal method="fill">100</horizontal>
+                </sizing>
+            </flow-layout>
+        </template>
+    </templates>
+</owo-ui>

@@ -53,7 +53,7 @@ public class PanelUpgradeRecipe<T extends Item & CapacityLimitedPanelItem & Filt
         ArrayList<ItemStack> stacks = new ArrayList<>(inventory.getInputStacks().stream().map(ItemStack::copy).filter(stack -> !stack.isEmpty()).toList());
         if (stacks.size() <= 1) return null;
         for (Item item : stacks.stream().map(ItemStack::getItem).toList()) {
-            if (!(item == this.item)) return null;
+            if (item != this.item) return null;
         }
         while (stacks.size() > 1 && stacks.stream().map(stack -> stack.getItem() == this.item ? CapacityLimitedPanelItem.capacityTier(stack) : BigInteger.ZERO).distinct().count() < stacks.size()) {
             stacks = new ArrayList<>(stacks.stream().sorted(Comparator.comparing(CapacityLimitedPanelItem::capacityTier)).toList());
@@ -62,8 +62,8 @@ public class PanelUpgradeRecipe<T extends Item & CapacityLimitedPanelItem & Filt
                 if (firstStack.getItem() == this.item) {
                     ItemStack nextStack = stacks.get(i + 1);
                     if (!item.currentFilter(firstStack).equals(item.currentFilter(nextStack)) &&
-                            !item.canSetFilter(firstStack, ItemVariant.of(nextStack)) &&
-                            !item.canSetFilter(nextStack, ItemVariant.of(firstStack))) return null;
+                            !item.canSetFilter(firstStack, item.currentFilter(nextStack)) &&
+                            !item.canSetFilter(nextStack, item.currentFilter(firstStack))) return null;
                     if (!(CapacityLimitedPanelItem.capacityTier(firstStack).compareTo(CapacityLimitedPanelItem.capacityTier(nextStack)) == 0))
                         return null;
                     ArrayList<ItemStack> newUpgrades = new ArrayList<>();
@@ -76,12 +76,12 @@ public class PanelUpgradeRecipe<T extends Item & CapacityLimitedPanelItem & Filt
                         newUpgrades.addAll(item.upgrades(nextStack).stream().filter(stack -> !stack.isEmpty()).toList());
                     }
                     if (newUpgrades.size() > 8) return null;
-                    var newStack = firstStack;
-                    newStack.put(CapacityLimitedPanelItem.CAPACITY, CapacityLimitedPanelItem.capacityTier(firstStack).add(BigInteger.ONE));
-                    item.setUpgrades(newStack, newUpgrades);
-                    newStack.put(DrawerPanelItem.COUNT, firstStack.get(DrawerPanelItem.COUNT).add(nextStack.get(DrawerPanelItem.COUNT)));
-                    stacks.set(i, newStack);
-                    stacks.remove(i + 1);
+                    if (item.currentFilter(firstStack).isBlank()) item.setFilter(firstStack, item.currentFilter(nextStack));
+                    firstStack.put(CapacityLimitedPanelItem.CAPACITY, CapacityLimitedPanelItem.capacityTier(firstStack).add(BigInteger.ONE));
+                    item.setUpgrades(firstStack, newUpgrades);
+                    firstStack.put(DrawerPanelItem.COUNT, firstStack.get(DrawerPanelItem.COUNT).add(nextStack.get(DrawerPanelItem.COUNT)));
+                    stacks.set(i, firstStack);
+                    stacks.remove(nextStack);
                     break;
                 }
             }

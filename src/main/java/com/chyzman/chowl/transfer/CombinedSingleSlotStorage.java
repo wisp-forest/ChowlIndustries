@@ -1,6 +1,5 @@
 package com.chyzman.chowl.transfer;
 
-import com.google.common.math.BigIntegerMath;
 import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 
@@ -8,11 +7,24 @@ import java.math.BigInteger;
 import java.util.List;
 
 @SuppressWarnings("UnstableApiUsage")
-public class CombinedSingleSlotStorage<T> implements SingleSlotStorage<T>, BigStorageView<T> {
+public class CombinedSingleSlotStorage<T> implements BigSingleSlotStorage<T> {
     private final List<SingleSlotStorage<T>> components;
 
     public CombinedSingleSlotStorage(List<SingleSlotStorage<T>> components) {
         this.components = components;
+    }
+
+    @Override
+    public BigInteger bigInsert(T resource, BigInteger maxAmount, TransactionContext transaction) {
+        BigInteger remaining = maxAmount;
+
+        for (SingleSlotStorage<T> component : components) {
+            remaining = remaining.subtract(BigSingleSlotStorage.bigInsert(component, resource, remaining, transaction));
+
+            if (remaining.equals(BigInteger.ZERO)) break;
+        }
+
+        return maxAmount.subtract(remaining);
     }
 
     @Override
@@ -25,6 +37,19 @@ public class CombinedSingleSlotStorage<T> implements SingleSlotStorage<T>, BigSt
         }
 
         return amount;
+    }
+
+    @Override
+    public BigInteger bigExtract(T resource, BigInteger maxAmount, TransactionContext transaction) {
+        BigInteger remaining = maxAmount;
+
+        for (SingleSlotStorage<T> component : components) {
+            remaining = remaining.subtract(BigStorageView.bigExtract(component, resource, remaining, transaction));
+
+            if (remaining.equals(BigInteger.ZERO)) break;
+        }
+
+        return maxAmount.subtract(remaining);
     }
 
     @Override

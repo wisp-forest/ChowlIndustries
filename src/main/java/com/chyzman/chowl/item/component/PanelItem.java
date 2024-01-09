@@ -95,7 +95,9 @@ public interface PanelItem {
                     var panel = (PanelItem) stack.getItem();
                     var storage = panel.getStorage(PanelStorageContext.from(frame, side));
 
+
                     if (storage == null) return ActionResult.FAIL;
+                    if (panel instanceof FilteringPanelItem filteringPanel && filteringPanel.currentFilter(stack).isBlank()) return ActionResult.FAIL;
                     if (world.isClient) return ActionResult.SUCCESS;
 
                     try (var tx = Transaction.openOuter()) {

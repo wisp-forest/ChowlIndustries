@@ -3,54 +3,55 @@ package com.chyzman.chowl.transfer;
 import com.chyzman.chowl.util.CompressionManager;
 import com.chyzman.chowl.util.VariantUtils;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
-import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 
+import java.math.BigInteger;
+
 @SuppressWarnings("UnstableApiUsage")
-public class CompressingStorage implements SingleSlotStorage<ItemVariant> {
-    private final SingleSlotStorage<ItemVariant> base;
+public class CompressingStorage implements BigSingleSlotStorage<ItemVariant> {
+    private final BigSingleSlotStorage<ItemVariant> base;
     private final int times;
 
-    public CompressingStorage(SingleSlotStorage<ItemVariant> base, int times) {
+    public CompressingStorage(BigSingleSlotStorage<ItemVariant> base, int times) {
         this.base = base;
         this.times = times;
     }
 
     @Override
-    public long insert(ItemVariant resource, long maxAmount, TransactionContext transaction) {
-        if (VariantUtils.hasNbt(resource)) return 0;
+    public BigInteger bigInsert(ItemVariant resource, BigInteger maxAmount, TransactionContext transaction) {
+        if (VariantUtils.hasNbt(resource)) return BigInteger.ZERO;
 
         var res = CompressionManager.downBy(resource.getItem(), times);
 
-        if (res == null) return 0;
+        if (res == null) return BigInteger.ZERO;
 
-        long insertable;
+        BigInteger insertable;
         try (var nested = transaction.openNested()) {
-            insertable = base.insert(ItemVariant.of(res.item()), maxAmount * res.totalMultiplier().longValueExact(), nested);
+            insertable = base.bigInsert(ItemVariant.of(res.item()), maxAmount.multiply(res.totalMultiplier()), nested);
         }
 
-        insertable = insertable / res.totalMultiplier().longValueExact() * res.totalMultiplier().longValueExact();
+        insertable = insertable.divide(res.totalMultiplier()).multiply(res.totalMultiplier());
 
-        return base.insert(ItemVariant.of(res.item()), insertable, transaction) / res.totalMultiplier().longValueExact();
+        return base.bigInsert(ItemVariant.of(res.item()), insertable, transaction).divide(res.totalMultiplier());
     }
 
     @Override
-    public long extract(ItemVariant resource, long maxAmount, TransactionContext transaction) {
-        if (VariantUtils.hasNbt(resource)) return 0;
+    public BigInteger bigExtract(ItemVariant resource, BigInteger maxAmount, TransactionContext transaction) {
+        if (VariantUtils.hasNbt(resource)) return BigInteger.ZERO;
 
         var res = CompressionManager.downBy(resource.getItem(), times);
 
-        if (res == null) return 0;
-        if (res.item() != base.getResource().getItem()) return 0;
+        if (res == null) return BigInteger.ZERO;
+        if (res.item() != base.getResource().getItem()) return BigInteger.ZERO;
 
-        long extractable;
+        BigInteger extractable;
         try (var nested = transaction.openNested()) {
-            extractable = base.extract(ItemVariant.of(res.item()), maxAmount * res.totalMultiplier().longValueExact(), nested);
+            extractable = base.bigExtract(ItemVariant.of(res.item()), maxAmount.multiply(res.totalMultiplier()), nested);
         }
 
-        extractable = extractable / res.totalMultiplier().longValueExact() * res.totalMultiplier().longValueExact();
+        extractable = extractable.divide(res.totalMultiplier()).multiply(res.totalMultiplier());
 
-        return base.extract(ItemVariant.of(res.item()), extractable, transaction) / res.totalMultiplier().longValueExact();
+        return base.bigExtract(ItemVariant.of(res.item()), extractable, transaction).divide(res.totalMultiplier());
     }
 
     @Override
@@ -68,21 +69,21 @@ public class CompressingStorage implements SingleSlotStorage<ItemVariant> {
     }
 
     @Override
-    public long getAmount() {
+    public BigInteger bigAmount() {
         var res = CompressionManager.upBy(base.getResource().getItem(), times);
 
-        if (res == null) return 0;
+        if (res == null) return BigInteger.ZERO;
 
-        return base.getAmount() / res.totalMultiplier().longValueExact();
+        return BigStorageView.bigAmount(base).divide(res.totalMultiplier());
     }
 
     @Override
-    public long getCapacity() {
+    public BigInteger bigCapacity() {
         var res = CompressionManager.upBy(base.getResource().getItem(), times);
 
-        if (res == null) return 0;
+        if (res == null) return BigInteger.ZERO;
 
-        return base.getCapacity() / res.totalMultiplier().longValueExact();
+        return BigStorageView.bigCapacity(base).divide(res.totalMultiplier());
     }
 
     @Override

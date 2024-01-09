@@ -4,6 +4,7 @@ import com.chyzman.chowl.block.button.BlockButton;
 import com.chyzman.chowl.block.button.BlockButtonProvider;
 import com.chyzman.chowl.block.button.ButtonRenderCondition;
 import com.chyzman.chowl.classes.AttackInteractionReceiver;
+import com.chyzman.chowl.client.ChowlClient;
 import com.chyzman.chowl.graph.ServerGraphStore;
 import com.chyzman.chowl.item.component.LockablePanelItem;
 import com.chyzman.chowl.item.component.PanelItem;
@@ -11,6 +12,8 @@ import com.chyzman.chowl.block.button.ButtonRenderer;
 import com.chyzman.chowl.registry.ChowlRegistry;
 import com.chyzman.chowl.util.BlockSideUtils;
 import io.wispforest.owo.ops.ItemOps;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
@@ -359,12 +362,6 @@ public class DrawerFrameBlock extends BlockWithEntity implements Waterloggable, 
 //        }
 //        return list;
 //    }
-
-    @Override
-    public ItemStack getPickStack(BlockView world, BlockPos pos, BlockState state) {
-        return super.getPickStack(world, pos, state);
-    }
-
 
     public static int getOrientation(World world, BlockHitResult hitResult) {
         var blockEntity = world.getBlockEntity(hitResult.getBlockPos());

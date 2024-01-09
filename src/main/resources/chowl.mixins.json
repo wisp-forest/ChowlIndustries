@@ -7,6 +7,7 @@
     "mixins": [
         "DataPackContentsMixin",
         "ItemEntityMixin",
+        "ServerPlayNetworkHandlerMixin",
         "ServerWorldMixin",
         "lavender.EntryMixin",
         "lavender.LavenderBookScreenAccessor"

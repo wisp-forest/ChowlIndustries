@@ -4,7 +4,6 @@ import com.chyzman.chowl.block.DrawerFrameBlockEntity;
 import com.chyzman.chowl.block.button.BlockButton;
 import com.chyzman.chowl.item.component.*;
 import com.chyzman.chowl.transfer.*;
-import com.chyzman.chowl.util.BigIntUtils;
 import com.chyzman.chowl.util.CompressionManager;
 import com.chyzman.chowl.util.NbtKeyTypes;
 import com.chyzman.chowl.util.VariantUtils;
@@ -14,7 +13,6 @@ import net.fabricmc.fabric.api.transfer.v1.item.PlayerInventoryStorage;
 import net.fabricmc.fabric.api.transfer.v1.storage.SlottedStorage;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageUtil;
 import net.fabricmc.fabric.api.transfer.v1.storage.base.CombinedSlottedStorage;
-import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.item.Item;
@@ -161,7 +159,28 @@ public class CompressingPanelItem extends BasePanelItem implements FilteringPane
                         drawerFrame.markDirty();
                         return ActionResult.SUCCESS;
                     })
-                    .build()
+                    .onDoubleClick((world, clickedFrame, clickedSide, clickedStack, player) -> {
+                        try {
+                            TransferState.DOUBLE_CLICK_INSERT.set(true);
+
+                            var panel = (PanelItem) stack.getItem();
+                            var storage = panel.getStorage(PanelStorageContext.from(clickedFrame, side));
+
+                            if (storage == null) return ActionResult.FAIL;
+                            if (panel instanceof FilteringPanelItem filteringPanel && filteringPanel.currentFilter(stack).isBlank()) return ActionResult.FAIL;
+                            if (world.isClient) return ActionResult.SUCCESS;
+
+                            try (var tx = Transaction.openOuter()) {
+                                StorageUtil.move(PlayerInventoryStorage.of(player), storage, variant -> true, Long.MAX_VALUE, tx);
+
+                                tx.commit();
+
+                                return ActionResult.SUCCESS;
+                            }
+                        } finally {
+                            TransferState.DOUBLE_CLICK_INSERT.set(false);
+                        }
+                    }).build()
             );
         }
         return addUpgradeButtons(stack, returned);
@@ -217,25 +236,25 @@ public class CompressingPanelItem extends BasePanelItem implements FilteringPane
     }
 
     @SuppressWarnings("UnstableApiUsage")
-    private class BaseStorage extends PanelStorage implements SingleSlotStorage<ItemVariant>, BigStorageView<ItemVariant> {
+    private class BaseStorage extends PanelStorage implements BigSingleSlotStorage<ItemVariant> {
         public BaseStorage(PanelStorageContext ctx) {
             super(ctx);
         }
 
         @Override
-        public long insert(ItemVariant resource, long maxAmount, TransactionContext transaction) {
-            if (VariantUtils.hasNbt(resource)) return 0;
-            if (CompressionManager.getOrCreateNode(resource.getItem()).previous != null) return 0;
+        public BigInteger bigInsert(ItemVariant resource, BigInteger maxAmount, TransactionContext transaction) {
+            if (VariantUtils.hasNbt(resource)) return BigInteger.ZERO;
+            if (CompressionManager.getOrCreateNode(resource.getItem()).previous != null) return BigInteger.ZERO;
 
             var contained = ctx.stack().get(ITEM);
 
             if (contained == Items.AIR) contained = resource.getItem();
-            if (contained != resource.getItem()) return 0;
+            if (contained != resource.getItem()) return BigInteger.ZERO;
 
             var currentCount = ctx.stack().get(COUNT);
             var capacity = bigCapacity();
             var spaceLeft = capacity.subtract(currentCount).max(BigInteger.ZERO);
-            var inserted = spaceLeft.min(BigInteger.valueOf(maxAmount));
+            var inserted = spaceLeft.min(maxAmount);
 
             updateSnapshots(transaction);
             ctx.stack().put(ITEM, contained);
@@ -250,22 +269,22 @@ public class CompressingPanelItem extends BasePanelItem implements FilteringPane
             ))
                 return maxAmount;
 
-            return BigIntUtils.longValueSaturating(inserted);
+            return inserted;
         }
 
         @Override
-        public long extract(ItemVariant resource, long maxAmount, TransactionContext tx) {
-            if (VariantUtils.hasNbt(resource)) return 0;
+        public BigInteger bigExtract(ItemVariant resource, BigInteger maxAmount, TransactionContext tx) {
+            if (VariantUtils.hasNbt(resource)) return BigInteger.ZERO;
 
             var contained = ctx.stack().get(ITEM);
 
-            if (contained == Items.AIR) return 0;
-            if (contained != resource.getItem()) return 0;
+            if (contained == Items.AIR) return BigInteger.ZERO;
+            if (contained != resource.getItem()) return BigInteger.ZERO;
 
             var currentCount = ctx.stack().get(COUNT);
 
-            long removed = Math.min(BigIntUtils.longValueSaturating(currentCount), maxAmount);
-            var newCount = currentCount.subtract(BigInteger.valueOf(removed));
+            BigInteger removed = currentCount.min(maxAmount);
+            var newCount = currentCount.subtract(removed);
 
             updateSnapshots(tx);
             ctx.stack().put(COUNT, newCount);
