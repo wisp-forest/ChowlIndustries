@@ -63,8 +63,6 @@ public class DrawerFrameBlockModel extends ForwardingBakedModel {
             var transform = new MatrixQuadTransform();
             var matrices = transform.matrices();
 
-            matrices.translate(-0.5F, -0.5F, -0.5F);
-
             context.pushTransform(transform);
 
             for (int i = 0; i < 6; i++) {
@@ -88,16 +86,9 @@ public class DrawerFrameBlockModel extends ForwardingBakedModel {
                 float rotation = 0;
                 if (orientation > 0 && orientation < 4) {
                     rotation = orientation * 90;
-                } else if (orientation < 0 && orientation > -721) {
-                    rotation = client.world.getTime() % 360 * (-orientation + 360);
                 }
                 matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(rotation));
-
-                if (!(stack.getItem() instanceof PanelItem)) {
-                    matrices.translate(0, 0, -1 / 32f);
-                    matrices.scale(3 / 4f, 3 / 4f, 3 / 4f);
-                    matrices.translate(0, 0, 1 / 32f);
-                }
+                matrices.translate(-0.5, -0.5, -0.5);
 
                 try {
                     RenderGlobals.DRAWER_FRAME.set(be);
@@ -107,16 +98,10 @@ public class DrawerFrameBlockModel extends ForwardingBakedModel {
 
                     matrices.push();
 
-                    if (stack.getItem() instanceof SkullItem) {
-                        matrices.scale(2f, 2f, 1 / 3f);
-                        matrices.translate(0, 0, 1 / 4f);
-                    }
-
-                    matrices.translate(0, 0, 1 / 32f);
+                    matrices.translate(0, 0, 0);
 
                     baseModel.emitItemQuads(stack, randomSupplier, context);
 
-                    matrices.translate(0, 0, -1 / 32f);
                     matrices.pop();
                 } finally {
                     RenderGlobals.DRAWER_FRAME.remove();
