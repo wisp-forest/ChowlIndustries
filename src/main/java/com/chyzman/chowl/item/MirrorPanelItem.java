@@ -9,7 +9,7 @@ import com.chyzman.chowl.item.component.UpgradeablePanelItem;
 import com.chyzman.chowl.transfer.CombinedSingleSlotStorage;
 import com.chyzman.chowl.transfer.PanelStorageContext;
 import com.chyzman.chowl.util.NbtKeyTypes;
-import io.wispforest.owo.nbt.NbtKey;
+import io.wispforest.owo.serialization.endec.KeyedEndec;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.SlottedStorage;
 import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage;
@@ -23,7 +23,7 @@ import java.util.List;
 
 @SuppressWarnings("UnstableApiUsage")
 public class MirrorPanelItem extends BasePanelItem implements PanelItem, FilteringPanelItem, DisplayingPanelItem, UpgradeablePanelItem {
-    public static final NbtKey<ItemVariant> FILTER = new NbtKey<>("Filter", NbtKeyTypes.ITEM_VARIANT);
+    static KeyedEndec<ItemVariant> FILTER = NbtKeyTypes.ITEM_VARIANT_ENDEC.keyed("Filter", ItemVariant.blank());
 
     public static final BlockButton SET_FILTER_BUTTON = PanelItem.buttonBuilder(2, 2, 14, 14)
         .onUse((world, drawerFrame, side, stack, player, hand) -> {
@@ -47,7 +47,7 @@ public class MirrorPanelItem extends BasePanelItem implements PanelItem, Filteri
 
     @Override
     public @Nullable SingleSlotStorage<ItemVariant> getStorage(PanelStorageContext ctx) {
-        ItemVariant filter = ctx.stack().getOr(FILTER, ItemVariant.blank());
+        ItemVariant filter = ctx.stack().get(FILTER);
         if (filter.isBlank()) return null;
 
         List<SingleSlotStorage<ItemVariant>> slots = new ArrayList<>();
@@ -70,7 +70,7 @@ public class MirrorPanelItem extends BasePanelItem implements PanelItem, Filteri
 
     @Override
     public List<BlockButton> listButtons(DrawerFrameBlockEntity drawerFrame, Direction side, ItemStack stack) {
-        if (stack.getOr(FILTER, ItemVariant.blank()).isBlank()) {
+        if (stack.get(FILTER).isBlank()) {
             return List.of(SET_FILTER_BUTTON);
         } else {
             return List.of(STORAGE_BUTTON);
@@ -84,7 +84,7 @@ public class MirrorPanelItem extends BasePanelItem implements PanelItem, Filteri
 
     @Override
     public ItemVariant currentFilter(ItemStack stack) {
-        return stack.getOr(FILTER, ItemVariant.blank());
+        return stack.get(FILTER);
     }
 
     @Override

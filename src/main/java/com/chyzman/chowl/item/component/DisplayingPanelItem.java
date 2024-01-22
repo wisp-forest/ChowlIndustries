@@ -1,18 +1,16 @@
 package com.chyzman.chowl.item.component;
 
-import com.chyzman.chowl.util.NbtKeyTypes;
-import io.wispforest.owo.nbt.NbtKey;
+import io.wispforest.owo.serialization.Endec;
+import io.wispforest.owo.serialization.endec.KeyedEndec;
+import io.wispforest.owo.serialization.endec.StructEndecBuilder;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Util;
 import org.jetbrains.annotations.Nullable;
 
 public interface DisplayingPanelItem extends PanelItem {
-    NbtKey<Config> CONFIG = new NbtKey<>("Config", Config.KEY_TYPE);
+    KeyedEndec<Config> CONFIG = Config.ENDEC.keyed("Config", Config::new);
 
     default @Nullable Text styleText(ItemStack stack, Text wrapped) {
         return Text.literal("").append(wrapped).setStyle(getConfig(stack).textStyle());
@@ -43,8 +41,19 @@ public interface DisplayingPanelItem extends PanelItem {
     }
 
     class Config {
-        public static final NbtKey.Type<Config> KEY_TYPE = NbtKeyTypes.fromFactory(Config::new, Config::readNbt, Config::writeNbt);
-
+        public static final Endec<Config> ENDEC = StructEndecBuilder.of(
+                Endec.BOOLEAN.fieldOf("HideCount", Config::hideCount),
+                Endec.BOOLEAN.fieldOf("HideCapacity", Config::hideCapacity),
+                Endec.BOOLEAN.fieldOf("HideName", Config::hideName),
+                Endec.BOOLEAN.fieldOf("HideItem", Config::hideItem),
+                Endec.BOOLEAN.fieldOf("HideUpgrades", Config::hideUpgrades),
+                Endec.BOOLEAN.fieldOf("HideButtons", Config::hideButtons),
+                Endec.BOOLEAN.fieldOf("ShowPercentage", Config::showPercentage),
+                Endec.BOOLEAN.fieldOf("IgnoreTemplating", Config::ignoreTemplating),
+                Endec.ofCodec(Style.Codecs.CODEC).fieldOf("TextStyle", Config::textStyle),
+                Config::new
+        );
+        
         private boolean hideCount = false;
         private boolean hideCapacity = false;
         private boolean hideName = false;
@@ -56,6 +65,28 @@ public interface DisplayingPanelItem extends PanelItem {
         private Style textStyle = Style.EMPTY.withColor(Formatting.WHITE);
 
         public Config() {
+        }
+
+        public Config(
+                boolean hideCount,
+                boolean hideCapacity,
+                boolean hideName,
+                boolean hideItem,
+                boolean hideUpgrades,
+                boolean hideButtons,
+                boolean showPercentage,
+                boolean ignoreTemplating,
+                Style textStyle
+        ) {
+            this.hideCount = hideCount;
+            this.hideCapacity = hideCapacity;
+            this.hideName = hideName;
+            this.hideItem = hideItem;
+            this.hideUpgrades = hideUpgrades;
+            this.hideButtons = hideButtons;
+            this.showPercentage = showPercentage;
+            this.ignoreTemplating = ignoreTemplating;
+            this.textStyle = textStyle;
         }
 
         public boolean hideCount() {
@@ -130,34 +161,34 @@ public interface DisplayingPanelItem extends PanelItem {
             this.textStyle = textStyle;
         }
 
-        public void readNbt(NbtCompound nbt) {
-            this.hideCount = nbt.getBoolean("HideCount");
-            this.hideCapacity = nbt.getBoolean("HideCapacity");
-            this.hideName = nbt.getBoolean("HideName");
-            this.hideItem = nbt.getBoolean("HideItem");
-            this.hideUpgrades = nbt.getBoolean("HideUpgrades");
-            this.hideButtons = nbt.getBoolean("HideButtons");
-            this.showPercentage = nbt.getBoolean("ShowPercentage");
-            this.ignoreTemplating = nbt.getBoolean("IgnoreTemplating");
-            this.textStyle = Style.CODEC.parse(NbtOps.INSTANCE, nbt.get("TextStyle"))
-                    .get()
-                    .left()
-                    .orElse(Style.EMPTY.withColor(Formatting.WHITE));
-        }
-
-        public void writeNbt(NbtCompound nbt) {
-            nbt.putBoolean("HideCount", hideCount);
-            nbt.putBoolean("HideCapacity", hideCapacity);
-            nbt.putBoolean("HideName", hideName);
-            nbt.putBoolean("HideItem", hideItem);
-            nbt.putBoolean("HideUpgrades", hideUpgrades);
-            nbt.putBoolean("HideButtons", hideButtons);
-            nbt.putBoolean("ShowPercentage", showPercentage);
-            nbt.putBoolean("IgnoreTemplating", ignoreTemplating);
-            nbt.put("TextStyle", Util.getResult(
-                    Style.CODEC.encodeStart(NbtOps.INSTANCE, textStyle),
-                    RuntimeException::new
-            ));
-        }
+//        public void readNbt(NbtCompound nbt) {
+//            this.hideCount = nbt.getBoolean("HideCount");
+//            this.hideCapacity = nbt.getBoolean("HideCapacity");
+//            this.hideName = nbt.getBoolean("HideName");
+//            this.hideItem = nbt.getBoolean("HideItem");
+//            this.hideUpgrades = nbt.getBoolean("HideUpgrades");
+//            this.hideButtons = nbt.getBoolean("HideButtons");
+//            this.showPercentage = nbt.getBoolean("ShowPercentage");
+//            this.ignoreTemplating = nbt.getBoolean("IgnoreTemplating");
+//            this.textStyle = Style.CODEC.parse(NbtOps.INSTANCE, nbt.get("TextStyle"))
+//                    .get()
+//                    .left()
+//                    .orElse(Style.EMPTY.withColor(Formatting.WHITE));
+//        }
+//
+//        public void writeNbt(NbtCompound nbt) {
+//            nbt.putBoolean("HideCount", hideCount);
+//            nbt.putBoolean("HideCapacity", hideCapacity);
+//            nbt.putBoolean("HideName", hideName);
+//            nbt.putBoolean("HideItem", hideItem);
+//            nbt.putBoolean("HideUpgrades", hideUpgrades);
+//            nbt.putBoolean("HideButtons", hideButtons);
+//            nbt.putBoolean("ShowPercentage", showPercentage);
+//            nbt.putBoolean("IgnoreTemplating", ignoreTemplating);
+//            nbt.put("TextStyle", Util.getResult(
+//                    Style.CODEC.encodeStart(NbtOps.INSTANCE, textStyle),
+//                    RuntimeException::new
+//            ));
+//        }
     }
 }

@@ -4,6 +4,8 @@ import com.chyzman.chowl.item.component.*;
 import io.wispforest.owo.client.screens.ScreenUtils;
 import io.wispforest.owo.client.screens.SlotGenerator;
 import io.wispforest.owo.client.screens.SyncedProperty;
+import io.wispforest.owo.serialization.Endec;
+import io.wispforest.owo.serialization.endec.StructEndecBuilder;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.minecraft.entity.player.PlayerEntity;
@@ -83,5 +85,11 @@ public class PanelConfigSreenHandler extends ScreenHandler {
 
     public record ConfigFilter(ItemStack newFilter) { }
 
-    public record ConfigConfig(DisplayingPanelItem.Config displayConfig, boolean locked) { }
+    public record ConfigConfig(DisplayingPanelItem.Config displayConfig, boolean locked) {
+        public static final Endec<ConfigConfig> ENDEC = StructEndecBuilder.of(
+                DisplayingPanelItem.Config.ENDEC.fieldOf("DisplayConfig", ConfigConfig::displayConfig),
+                Endec.BOOLEAN.fieldOf("Locked", ConfigConfig::locked),
+                ConfigConfig::new
+        );
+    }
 }

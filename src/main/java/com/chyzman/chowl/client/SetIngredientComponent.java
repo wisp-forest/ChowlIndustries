@@ -2,6 +2,7 @@ package com.chyzman.chowl.client;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import io.wispforest.lavender.md.ItemListComponent;
 import io.wispforest.lavender.md.features.RecipeFeature;
 import io.wispforest.owo.ui.parsing.UIModel;
 import io.wispforest.owo.ui.parsing.UIModelParsingException;
@@ -14,7 +15,7 @@ import org.w3c.dom.Element;
 
 import java.util.Map;
 
-public class SetIngredientComponent extends RecipeFeature.IngredientComponent {
+public class SetIngredientComponent extends ItemListComponent {
     public static void init() {
         UIParsing.registerFactory("chowl.ingredient", element -> new SetIngredientComponent());
     }

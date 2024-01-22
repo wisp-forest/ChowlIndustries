@@ -15,6 +15,7 @@ import com.chyzman.chowl.registry.ChowlRegistry;
 import com.chyzman.chowl.transfer.BigStorageView;
 import com.chyzman.chowl.transfer.PanelStorageContext;
 import com.chyzman.chowl.util.BlockSideUtils;
+import com.mojang.serialization.MapCodec;
 import io.wispforest.owo.ops.ItemOps;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
@@ -212,6 +213,11 @@ public class DrawerFrameBlock extends BlockWithEntity implements Waterloggable, 
                 .with(WATERLOGGED, Boolean.FALSE)
                 .with(LIGHT_LEVEL, 0)
                 .with(TICKING, Boolean.FALSE));
+    }
+
+    @Override
+    protected MapCodec<? extends BlockWithEntity> getCodec() {
+        return null;
     }
 
     @Nullable

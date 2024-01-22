@@ -3,35 +3,29 @@ package com.chyzman.chowl.item.component;
 import com.chyzman.chowl.block.button.BlockButton;
 import com.chyzman.chowl.block.button.ButtonRenderCondition;
 import com.chyzman.chowl.block.button.ButtonRenderer;
-import io.wispforest.owo.nbt.NbtKey;
 import io.wispforest.owo.ops.ItemOps;
+import io.wispforest.owo.serialization.endec.BuiltInEndecs;
+import io.wispforest.owo.serialization.endec.KeyedEndec;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.util.ActionResult;
-import net.minecraft.util.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
 public interface UpgradeablePanelItem extends DisplayingPanelItem {
-    NbtKey.ListKey<ItemStack> UPGRADES_LIST = new NbtKey.ListKey<>("Upgrades", NbtKey.Type.ITEM_STACK);
+    KeyedEndec<List<ItemStack>> UPGRADES_LIST = BuiltInEndecs.ITEM_STACK.listOf().keyed("Upgrades", ArrayList::new);
 
     default List<ItemStack> upgrades(ItemStack stack) {
-        var returned = new ArrayList<ItemStack>();
-
-        if (stack.has(UPGRADES_LIST))
-            stack.get(UPGRADES_LIST).forEach(nbtElement -> returned.add(ItemStack.fromNbt((NbtCompound) nbtElement)));
-
+        var returned = stack.get(UPGRADES_LIST);
         while (returned.size() < 8) returned.add(ItemStack.EMPTY);
         return returned;
     }
 
     default void setUpgrades(ItemStack stack, List<ItemStack> upgrades) {
-        var nbtList = new NbtList();
-        upgrades.forEach(itemStack -> nbtList.add(itemStack.writeNbt(new NbtCompound())));
-        stack.put(UPGRADES_LIST, nbtList);
+        stack.put(UPGRADES_LIST, upgrades);
     }
 
     default boolean hasUpgrade(ItemStack stack, Predicate<ItemStack> upgrade) {

@@ -2,13 +2,13 @@ package com.chyzman.chowl.item.component;
 
 import com.chyzman.chowl.util.BigIntUtils;
 import com.chyzman.chowl.util.NbtKeyTypes;
-import io.wispforest.owo.nbt.NbtKey;
+import io.wispforest.owo.serialization.endec.KeyedEndec;
 import net.minecraft.item.ItemStack;
 
 import java.math.BigInteger;
 
 public interface CapacityLimitedPanelItem extends PanelItem {
-    NbtKey<BigInteger> CAPACITY = new NbtKey<>("Capacity", NbtKeyTypes.BIG_INTEGER);
+    KeyedEndec<BigInteger> CAPACITY = NbtKeyTypes.BIG_INTEGER_ENDEC.keyed("Capacity", BigInteger.ZERO);
 
     BigInteger baseCapacity();
 
@@ -17,6 +17,6 @@ public interface CapacityLimitedPanelItem extends PanelItem {
     }
 
     static BigInteger capacityTier(ItemStack stack) {
-        return stack.getOr(CAPACITY, BigInteger.ZERO);
+        return stack.get(CAPACITY);
     }
 }

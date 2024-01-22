@@ -18,7 +18,7 @@ import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.item.SkullItem;
+import net.minecraft.item.PlayerHeadItem;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Direction;
@@ -92,7 +92,7 @@ public class DrawerFrameBlockEntityRenderer implements BlockEntityRenderer<Drawe
                         scale = (float) Math.min(2, (1 / (Math.max(properties.size().x, Math.max(properties.size().y, properties.size().z)))));
                         scale *= 0.6f;
                     }
-                    if (stack.getItem() instanceof SkullItem) {
+                    if (stack.getItem() instanceof PlayerHeadItem) {
                         matrices.translate(0, 0, 1 / 32f);
                         matrices.scale(6 / 4f, 6 / 4f, 1 / 4f);
                         matrices.translate(0, 0, 1 / 8f);
