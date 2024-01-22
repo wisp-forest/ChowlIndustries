@@ -7,6 +7,7 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.block.BlockState;
+import net.minecraft.datafixer.DataFixTypes;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
@@ -16,6 +17,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.PersistentState;
+import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -23,17 +25,21 @@ import java.util.*;
 // I tried to look at how Kneelawk's graph library, and died inside from how complex it is.
 // - Basique
 public class ServerGraphStore extends PersistentState implements GraphStore {
-    private final ServerWorld world;
     private final Map<UUID, GraphEntry> graphs = new HashMap<>();
     private final Long2ObjectMap<UUID> blockToGraph = new Long2ObjectOpenHashMap<>();
     private final List<UUID> syncRemoves = new ArrayList<>();
 
-    private ServerGraphStore(ServerWorld world) {
-        this.world = world;
+    public static final PersistentState.Type<ServerGraphStore> TYPE = new Type<>(() -> {
+        var state = new ServerGraphStore();
+        state.markDirty();
+        return state;
+    }, nbtCompound -> new ServerGraphStore()., DataFixTypes.LEVEL);
+
+    private ServerGraphStore() {
     }
 
-    private ServerGraphStore(ServerWorld world, NbtCompound tag) {
-        this(world);
+    private ServerGraphStore(NbtCompound tag) {
+        this();
 
         NbtList graphsTag = tag.getList("Graphs", NbtElement.COMPOUND_TYPE);
         for (int i = 0; i < graphsTag.size(); i++) {
@@ -46,15 +52,15 @@ public class ServerGraphStore extends PersistentState implements GraphStore {
 
     static {
         ServerTickEvents.END_WORLD_TICK.register(world -> {
-            ServerGraphStore.get(world).runTasks();
+            ServerGraphStore.get(world).runTasks(world);
         });
     }
 
     public static ServerGraphStore get(ServerWorld world) {
         return world.getPersistentStateManager().getOrCreate(
-            tag -> new ServerGraphStore(world, tag),
+            tag -> new ServerGraphStore(tag),
             "chowl_graph",
-                () -> new ServerGraphStore(world)
+                () -> new ServerGraphStore()
         );
     }
 
@@ -68,7 +74,7 @@ public class ServerGraphStore extends PersistentState implements GraphStore {
         }
     }
 
-    private void runTasks() {
+    private void runTasks(ServerWorld world) {
         for (var id : syncRemoves) {
             Chowl.CHANNEL.serverHandle(world.getPlayers()).send(new DestroyGraphPacket(id));
         }
