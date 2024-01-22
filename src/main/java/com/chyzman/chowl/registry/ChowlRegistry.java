@@ -50,7 +50,7 @@ public class ChowlRegistry {
     );
     public static final Item DRAWER_FRAME_ITEM = registerItem("drawer_frame", new DrawerFrameBlockItem(DRAWER_FRAME_BLOCK, new Item.Settings()));
 
-    public static final WitnessedBlastingCriteria WITNESSED_BLASTING_CRITERIA = Criteria.register(new WitnessedBlastingCriteria());
+    public static final WitnessedBlastingCriteria WITNESSED_BLASTING_CRITERIA = Criteria.register("witness_blasting", new WitnessedBlastingCriteria());
 
     public static void init() {
     }
