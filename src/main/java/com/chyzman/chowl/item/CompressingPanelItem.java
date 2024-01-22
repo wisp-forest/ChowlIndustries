@@ -36,7 +36,7 @@ public class CompressingPanelItem extends BasePanelItem implements FilteringPane
     KeyedEndec<Item> ITEM = BuiltInEndecs.ofRegistry(Registries.ITEM).keyed("Variant", Items.AIR);
     KeyedEndec<BigInteger> COUNT = NbtKeyTypes.BIG_INTEGER_ENDEC.keyed("Count", BigInteger.ZERO);
     KeyedEndec<Boolean> LOCKED = Endec.BOOLEAN.keyed("Locked", false);
-    
+
     public CompressingPanelItem(Item.Settings settings) {
         super(settings);
     }
