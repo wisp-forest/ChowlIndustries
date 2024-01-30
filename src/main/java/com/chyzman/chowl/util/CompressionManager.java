@@ -221,7 +221,7 @@ public class CompressionManager {
 
             var recipe = recipeManager.get().getFirstMatch(RecipeType.CRAFTING, INVENTORY, null);
             return recipe
-                .map(craftingRecipe -> craftingRecipe.craft(INVENTORY, DynamicRegistryManager.EMPTY))
+                .map(craftingRecipe -> craftingRecipe.value().craft(INVENTORY, DynamicRegistryManager.EMPTY))
                 .orElse(null);
         }
 
@@ -231,7 +231,7 @@ public class CompressionManager {
 
             var recipe = recipeManager.get().getFirstMatch(RecipeType.CRAFTING, INVENTORY, null);
             return recipe
-                .map(craftingRecipe -> craftingRecipe.craft(INVENTORY, DynamicRegistryManager.EMPTY))
+                .map(craftingRecipe -> craftingRecipe.value().craft(INVENTORY, DynamicRegistryManager.EMPTY))
                 .orElse(null);
         }
 
@@ -244,7 +244,7 @@ public class CompressionManager {
 
             var recipe = recipeManager.get().getFirstMatch(RecipeType.CRAFTING, INVENTORY, null);
             return recipe
-                .map(craftingRecipe -> craftingRecipe.craft(INVENTORY, DynamicRegistryManager.EMPTY))
+                .map(craftingRecipe -> craftingRecipe.value().craft(INVENTORY, DynamicRegistryManager.EMPTY))
                 .orElse(null);
         }
     }

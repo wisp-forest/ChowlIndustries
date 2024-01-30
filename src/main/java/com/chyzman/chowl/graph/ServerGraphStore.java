@@ -33,14 +33,11 @@ public class ServerGraphStore extends PersistentState implements GraphStore {
         var state = new ServerGraphStore();
         state.markDirty();
         return state;
-    }, nbtCompound -> new ServerGraphStore()., DataFixTypes.LEVEL);
+    }, ServerGraphStore::new, DataFixTypes.LEVEL);
 
-    private ServerGraphStore() {
-    }
+    private ServerGraphStore() {}
 
     private ServerGraphStore(NbtCompound tag) {
-        this();
-
         NbtList graphsTag = tag.getList("Graphs", NbtElement.COMPOUND_TYPE);
         for (int i = 0; i < graphsTag.size(); i++) {
             NbtCompound graphTag = graphsTag.getCompound(i);
@@ -57,11 +54,7 @@ public class ServerGraphStore extends PersistentState implements GraphStore {
     }
 
     public static ServerGraphStore get(ServerWorld world) {
-        return world.getPersistentStateManager().getOrCreate(
-            tag -> new ServerGraphStore(tag),
-            "chowl_graph",
-                () -> new ServerGraphStore()
-        );
+        return world.getPersistentStateManager().getOrCreate(TYPE, "chowl_graph");
     }
 
     public Map<UUID, GraphEntry> graphs() {

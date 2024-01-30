@@ -21,11 +21,10 @@ import java.util.List;
 
 import static com.chyzman.chowl.Chowl.*;
 
-@SuppressWarnings("UnstableApiUsage")
 public class DrawerPanelItem extends BasePanelItem implements PanelItem, FilteringPanelItem, LockablePanelItem, DisplayingPanelItem, UpgradeablePanelItem, CapacityLimitedPanelItem {
-    KeyedEndec<ItemVariant> VARIANT = NbtKeyTypes.ITEM_VARIANT_ENDEC.keyed("Count", ItemVariant.blank());
-    KeyedEndec<BigInteger> COUNT = NbtKeyTypes.BIG_INTEGER_ENDEC.keyed("Count", BigInteger.ZERO);
-    KeyedEndec<Boolean> LOCKED = Endec.BOOLEAN.keyed("Locked", false);
+    public static final KeyedEndec<ItemVariant> VARIANT = NbtKeyTypes.ITEM_VARIANT_ENDEC.keyed("Variant", ItemVariant.blank());
+    public static final KeyedEndec<BigInteger> COUNT = NbtKeyTypes.BIG_INTEGER_ENDEC.keyed("Count", BigInteger.ZERO);
+    public static final KeyedEndec<Boolean> LOCKED = Endec.BOOLEAN.keyed("Locked", false);
 
     public DrawerPanelItem(Settings settings) {
         super(settings);

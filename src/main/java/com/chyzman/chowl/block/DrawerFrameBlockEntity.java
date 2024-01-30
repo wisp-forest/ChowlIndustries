@@ -8,7 +8,9 @@ import com.chyzman.chowl.registry.ChowlRegistry;
 import com.chyzman.chowl.transfer.PanelStorageContext;
 import io.wispforest.owo.ops.WorldOps;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.SlottedStorage;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.CombinedSlottedStorage;
 import net.fabricmc.fabric.api.transfer.v1.storage.base.SidedStorageBlockEntity;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
@@ -28,6 +30,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -55,10 +58,21 @@ public class DrawerFrameBlockEntity extends BlockEntity implements SidedStorageB
         return BlockEntityUpdateS2CPacket.create(this);
     }
 
-    @SuppressWarnings("UnstableApiUsage")
     @Override
-    public @Nullable Storage<ItemVariant> getItemStorage(Direction fromSide) {
-        var ctx = PanelStorageContext.from(this, fromSide);
+    public @Nullable Storage<ItemVariant> getItemStorage(@Nullable Direction fromSide) {
+        if (fromSide != null) return getStorageForSide(fromSide);
+
+        var storages = new ArrayList<SlottedStorage<ItemVariant>>();
+        for (var side : Direction.values()) {
+            var sideStorage = getStorageForSide(side);
+            if (sideStorage != null) storages.add(sideStorage);
+        }
+
+        return new CombinedSlottedStorage<>(storages);
+    }
+
+    private @Nullable SlottedStorage<ItemVariant> getStorageForSide(@NotNull Direction side) {
+        var ctx = PanelStorageContext.from(this, side);
 
         if (!(ctx.stack().getItem() instanceof PanelItem panelItem)) return null;
 

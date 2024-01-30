@@ -82,7 +82,8 @@ public class NukeCoreUpgrade {
                 }
 
                 for (var entity : world.getOtherEntities(null, Box.of(pos3d, power * 2, power * 2, power * 2))) {
-                    if (entity.isImmuneToExplosion()) continue;
+                    // TODO fixme
+//                    if (entity.isImmuneToExplosion()) continue;
                     if (!CommonProtection.canDamageEntity(world, entity, CommonProtection.UNKNOWN, null)) continue;
 
                     double distanceModifier = 1 - Math.sqrt(entity.squaredDistanceTo(pos3d)) / (double) power;

@@ -20,12 +20,11 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Comparator;
 
-@SuppressWarnings("UnstableApiUsage")
 public class PanelUpgradeRecipe<T extends Item & CapacityLimitedPanelItem & FilteringPanelItem & UpgradeablePanelItem> extends SpecialCraftingRecipe {
     public final T item;
 
-    public PanelUpgradeRecipe(Identifier id, CraftingRecipeCategory category, T item) {
-        super(id, category);
+    public PanelUpgradeRecipe(CraftingRecipeCategory category, T item) {
+        super(category);
         this.item = item;
     }
 
@@ -50,7 +49,7 @@ public class PanelUpgradeRecipe<T extends Item & CapacityLimitedPanelItem & Filt
     }
 
     public @Nullable ItemStack getOutput(RecipeInputInventory inventory) {
-        ArrayList<ItemStack> stacks = new ArrayList<>(inventory.getInputStacks().stream().map(ItemStack::copy).filter(stack -> !stack.isEmpty()).toList());
+        ArrayList<ItemStack> stacks = new ArrayList<>(inventory.getHeldStacks().stream().map(ItemStack::copy).filter(stack -> !stack.isEmpty()).toList());
         if (stacks.size() <= 1) return null;
         for (Item item : stacks.stream().map(ItemStack::getItem).toList()) {
             if (item != this.item) return null;

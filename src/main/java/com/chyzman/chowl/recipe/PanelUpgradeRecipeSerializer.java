@@ -4,50 +4,44 @@ import com.chyzman.chowl.item.component.CapacityLimitedPanelItem;
 import com.chyzman.chowl.item.component.FilteringPanelItem;
 import com.chyzman.chowl.item.component.UpgradeablePanelItem;
 import com.google.gson.JsonObject;
+import io.wispforest.owo.serialization.Endec;
+import io.wispforest.owo.serialization.StructEndec;
+import io.wispforest.owo.serialization.endec.BuiltInEndecs;
+import io.wispforest.owo.serialization.endec.StructEndecBuilder;
+import io.wispforest.owo.serialization.util.EndecRecipeSerializer;
 import net.minecraft.item.Item;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.recipe.RecipeSerializer;
+import net.minecraft.recipe.SpecialCraftingRecipe;
 import net.minecraft.recipe.book.CraftingRecipeCategory;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.JsonHelper;
 
-public class PanelUpgradeRecipeSerializer implements RecipeSerializer<PanelUpgradeRecipe<?>> {
+import java.util.function.Function;
 
-    @Override
-    public PanelUpgradeRecipe<?> read(Identifier id, JsonObject json) {
-        var item = JsonHelper.getItem(json, "item");
-        return read(id, item, JsonHelper.getString(json, "category", null));
-    }
+@SuppressWarnings({"rawtypes", "unchecked"})
+public class PanelUpgradeRecipeSerializer extends EndecRecipeSerializer<PanelUpgradeRecipe<?>> {
 
-    @Override
-    public PanelUpgradeRecipe<?> read(Identifier id, PacketByteBuf buf) {
-        var category = buf.readString();
-        var item = buf.readRegistryValue(Registries.ITEM);
-        return read(id, item, category);
-    }
+    public static final StructEndec<PanelUpgradeRecipe> RECIPE_ENDEC = StructEndecBuilder.of(
+            Endec.ofCodec(CraftingRecipeCategory.CODEC).optionalFieldOf("category", SpecialCraftingRecipe::getCategory, CraftingRecipeCategory.MISC),
+            BuiltInEndecs.ofRegistry(Registries.ITEM).xmap(PanelUpgradeRecipeSerializer::tryCast, Function.identity()).fieldOf("item", o -> o.item),
+            (craftingRecipeCategory, item) -> new PanelUpgradeRecipe(craftingRecipeCategory, item)
+    );
 
-    public PanelUpgradeRecipe<?> read(Identifier id, Item item, String category) {
-        CraftingRecipeCategory craftingRecipeCategory = CraftingRecipeCategory.CODEC.byId(category, CraftingRecipeCategory.MISC);
-        return new PanelUpgradeRecipe<>(id, craftingRecipeCategory, tryCast(item, id));
-    }
-
-    @Override
-    public void write(PacketByteBuf buf, PanelUpgradeRecipe recipe) {
-        buf.writeString(recipe.getCategory().toString());
-        buf.writeRegistryValue(Registries.ITEM, recipe.item);
+    protected PanelUpgradeRecipeSerializer() {
+        super((StructEndec<PanelUpgradeRecipe<?>>) (Object) RECIPE_ENDEC);
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends Item & CapacityLimitedPanelItem & FilteringPanelItem & UpgradeablePanelItem> T tryCast(Item item, Identifier id) {
+    public static <T extends Item & CapacityLimitedPanelItem & FilteringPanelItem & UpgradeablePanelItem> T tryCast(Item item) {
         StringBuilder projectileFront = new StringBuilder(item.getName().getString()).append("isn't ");
-        String projectileEnd = ". Recipe: \"" + id + "\"";
         if (!(item instanceof CapacityLimitedPanelItem))
-            throw new RuntimeException(projectileFront.append("Capacity Limited").append(projectileEnd).toString());
+            throw new RuntimeException(projectileFront.append("Capacity Limited").toString());
         if (!(item instanceof FilteringPanelItem))
-            throw new RuntimeException(projectileFront.append("Filtering").append(projectileEnd).toString());
+            throw new RuntimeException(projectileFront.append("Filtering").toString());
         if (!(item instanceof UpgradeablePanelItem))
-            throw new RuntimeException(projectileFront.append("Upgradeable").append(projectileEnd).toString());
+            throw new RuntimeException(projectileFront.append("Upgradeable").toString());
         return (T) item;
     }
 }
