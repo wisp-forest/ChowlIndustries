@@ -16,7 +16,9 @@ import org.slf4j.LoggerFactory;
 import java.lang.ref.WeakReference;
 import java.math.BigInteger;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class CompressionManager {
     private static final Logger LOGGER = LoggerFactory.getLogger("Chowl/CompressionManager");
@@ -62,7 +64,7 @@ public class CompressionManager {
 
     public static Node getOrCreateNode(Item item) {
         var node = NODES.computeIfAbsent(item, Node::new);
-        node.tryFill();
+        node.tryFill(new HashSet<>());
         return node;
     }
 
@@ -139,15 +141,17 @@ public class CompressionManager {
             this.item = item;
         }
 
-        private void tryFill() {
+        private void tryFill(Set<Item> visited) {
             if (this.initialized) return;
             this.initialized = true;
+
+            visited.add(item);
 
             ItemStack stack = item.getDefaultStack();
 
             ItemStack toStack = try3x3(stack);
 
-            if (toStack != null) {
+            if (toStack != null && !visited.contains(toStack.getItem())) {
                 Node toNode = NODES.get(toStack.getItem());
                 if (toNode == null || toNode.previous == null) {
                     ItemStack backStack = try1x1(toStack);
@@ -161,13 +165,13 @@ public class CompressionManager {
                         toNode.previousAmount = 9;
                         LOGGER.debug("Linked {} -> {} ({})", item, toNode.item, 9);
 
-                        toNode.tryFill();
+                        toNode.tryFill(visited);
                     }
                 }
             } else {
                 toStack = try2x2(stack);
 
-                if (toStack != null) {
+                if (toStack != null && !visited.contains(toStack.getItem())) {
                     Node toNode = NODES.get(toStack.getItem());
                     if (toNode == null || toNode.previous == null) {
                         ItemStack backStack = try1x1(toStack);
@@ -181,7 +185,7 @@ public class CompressionManager {
                             toNode.previousAmount = 4;
                             LOGGER.debug("Linked {} -> {} ({})", item, toNode.item, 4);
 
-                            toNode.tryFill();
+                            toNode.tryFill(visited);
                         }
                     }
                 }
@@ -189,7 +193,7 @@ public class CompressionManager {
 
             toStack = try1x1(stack);
 
-            if (toStack != null) {
+            if (toStack != null && !visited.contains(toStack.getItem())) {
                 Node toNode = NODES.get(toStack.getItem());
                 if (toNode == null || toNode.next == null) {
                     ItemStack backStack = try3x3(toStack);
@@ -209,7 +213,7 @@ public class CompressionManager {
                         toNode.nextAmount = amount;
                         LOGGER.debug("Linked {} -> {} ({})", toNode.item, item, amount);
 
-                        toNode.tryFill();
+                        toNode.tryFill(visited);
                     }
                 }
             }

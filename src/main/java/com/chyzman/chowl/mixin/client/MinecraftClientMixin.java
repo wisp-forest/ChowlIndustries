@@ -60,13 +60,4 @@ public abstract class MinecraftClientMixin {
         options.attackKey.setPressed(false);
         cir.setReturnValue(true);
     }
-
-    @Inject(method = "addBlockEntityNbt", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/item/BlockItem;setBlockEntityNbt(Lnet/minecraft/item/ItemStack;Lnet/minecraft/block/entity/BlockEntityType;Lnet/minecraft/nbt/NbtCompound;)V",
-            shift = At.Shift.AFTER), cancellable = true)
-    private void removeTheNbtLore(ItemStack stack, BlockEntity blockEntity, CallbackInfo ci) {
-        if (blockEntity instanceof DrawerFrameBlockEntity) {
-            ci.cancel();
-        }
-    }
 }
